@@ -112,9 +112,16 @@ def process_clip(
             bbox = det["bbox"]
             conf = det["confidence"]
             
-            # 1. Staff Movement classification logic
+            # 1. Staff Movement & Demographics classification logic
             if state.total_votes < 10:
-                staff_prob, black_ratio = staff_classifier.extract_features(frame, bbox)
+                staff_prob, black_ratio, gender_pred, age_pred, age_bucket = staff_classifier.extract_features(frame, bbox)
+                
+                # Cache demographics on first successful extraction
+                if state.total_votes == 0:
+                    state.gender_pred = gender_pred
+                    state.age_pred = age_pred
+                    state.age_bucket = age_bucket
+                    
                 if (staff_prob > 0.40) and (black_ratio > 0.10):
                     state.staff_votes += 1
                 state.total_votes += 1
@@ -126,7 +133,8 @@ def process_clip(
                 vid, is_reentry = reid_tracker.get_visitor_id(store_id, camera_id, state.track_id, frame, bbox, timestamp)
                 state.global_vid = vid
                 if is_reentry:
-                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.REENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
+                    meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.REENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata=meta)
                     emitter.emit(evt)
                     event_counts[evt.event_type] += 1
                     last_event_frame = frame_num
@@ -146,13 +154,15 @@ def process_clip(
                     direction = "ENTRY" if state.previous_side == 1 else "EXIT"
                     
                     if direction == "ENTRY" and not state.has_emitted_entry:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         state.has_emitted_entry = True
                         last_event_frame = frame_num
                     elif direction == "EXIT" and not state.has_emitted_exit:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.EXIT.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.EXIT.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         state.has_emitted_exit = True
@@ -167,13 +177,15 @@ def process_clip(
                 if current_zone != state.zone_id:
                     if state.zone_id is not None:
                         dwell_ms = int(((frame_num - state.zone_enter_frame) / effective_fps) * 1000) if state.zone_enter_frame else 0
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_EXIT.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_EXIT.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         last_event_frame = frame_num
                         
                     if current_zone is not None:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_ENTER.value, timestamp=timestamp, zone_id=current_zone, confidence=conf, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_ENTER.value, timestamp=timestamp, zone_id=current_zone, confidence=conf, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         last_event_frame = frame_num
@@ -185,7 +197,8 @@ def process_clip(
                     frames_in_zone = frame_num - state.zone_enter_frame
                     if frames_in_zone > 0 and frames_in_zone % DWELL_EMIT_INTERVAL_FRAMES == 0:
                         dwell_ms = int((frames_in_zone / effective_fps) * 1000)
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_DWELL.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_DWELL.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         last_event_frame = frame_num
@@ -197,7 +210,8 @@ def process_clip(
                 
                 if in_queue and state.billing_join_frame is None:
                     state.billing_join_frame = frame_num
-                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_JOIN.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata={"queue_depth": current_queue_depth})
+                    meta = {"queue_depth": current_queue_depth, "gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_JOIN.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata=meta)
                     emitter.emit(evt)
                     event_counts[evt.event_type] += 1
                     last_event_frame = frame_num
@@ -205,7 +219,8 @@ def process_clip(
                     dwell_frames = frame_num - state.billing_join_frame
                     dwell_seconds = dwell_frames / FPS
                     if dwell_seconds < 120:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         last_event_frame = frame_num
@@ -218,7 +233,8 @@ def process_clip(
                     dwell_frames = frame_num - state.billing_join_frame
                     dwell_seconds = dwell_frames / FPS
                     if dwell_seconds < 120:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff)
+                        meta = {"gender_pred": state.gender_pred, "age_pred": state.age_pred, "age_bucket": state.age_bucket}
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff, metadata=meta)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                     state.billing_join_frame = None

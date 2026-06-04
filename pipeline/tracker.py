@@ -12,6 +12,12 @@ class TrackState:
         self.is_staff = False
         self.staff_votes = 0
         self.total_votes = 0
+        
+        # Demographics
+        self.gender_pred = None
+        self.age_pred = None
+        self.age_bucket = None
+        
         self.session_seq = 0
         self.billing_join_frame = None
         self.tripwire_side = None

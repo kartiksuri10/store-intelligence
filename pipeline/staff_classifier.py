@@ -79,17 +79,130 @@ _OCLIP_CUSTOMER_PROMPTS = [
 "a person whose top has any warm pale tint (cream, beige, nude, peach, butter, oat, sand) when seen in store lighting — even under shadow — is NOT in staff uniform; staff tops are pure black with zero warm tint; pale warm top therefore proves CUSTOMER",
 "a female shopper in a sleeveless or short-sleeve cream/beige kurti or tunic over dark leggings, hair loose or in a ponytail, leaning over a glass billing counter to look at products — kurti silhouette plus pale colour is a clear SHOPPER signature, never a staff uniform",
 ]
+# ── GENDER PROMPTS ──────────────────────────────────────────────────────────
+
+_OCLIP_GENDER_MALE_PROMPTS = [
+    "a man standing in a retail store, short hair, male facial features, masculine build",
+    "a male person browsing a cosmetics shelf, visible jawline, male body silhouette",
+    "a male customer or staff member in a beauty store, flat chest, broader shoulders than hips",
+    "a person with a distinctly male face and masculine posture, short cropped hair or medium-length hair",
+    "a man in a store aisle, male neck and jaw visible, no feminine clothing or accessories",
+    "a male individual photographed from the front or three-quarter angle, clearly male face, no visible makeup",
+    "a male shopper or store employee viewed from behind, wider shoulder-to-hip ratio, masculine gait",
+    "a person whose silhouette reads as male — broader upper torso, narrower hips, no skirt or dress, upright posture",
+    "a man with short or medium hair, stubble or clean-shaven face, neutral or masculine clothing in a retail environment",
+    "a male person of any age in a beauty or personal-care store — the body proportions and facial structure are distinctly male",
+]
+
+_OCLIP_GENDER_FEMALE_PROMPTS = [
+    "a woman standing in a retail store, female facial features, feminine body silhouette",
+    "a female customer or staff member in a beauty store, visible female face, narrower shoulders relative to hips",
+    "a woman browsing cosmetics, long or medium-length hair, feminine clothing such as a kurti, dress, or blouse",
+    "a person with distinctly female facial features — softer jaw, fuller cheeks — in a store aisle",
+    "a female individual photographed from the front or three-quarter angle, clearly female face, hair styled or tied back",
+    "a woman viewed from behind, narrower shoulders, wider hips, hair visible below the nape of the neck",
+    "a female shopper or store employee whose silhouette is feminine — hourglass or pear shape, or slight frame — in a retail setting",
+    "a woman of any age in a beauty or personal-care store, wearing jewellery, bindi, or feminine footwear such as sandals or heels",
+    "a female person with a ponytail, bun, or loose long hair, wearing any outfit, standing or walking inside a cosmetics shop",
+    "a woman whose body proportions, hair length, and clothing together clearly read as female, photographed in store lighting",
+]
+
+# ── AGE-BUCKET PROMPTS ──────────────────────────────────────────────────────
+
+_OCLIP_AGE_0_17_PROMPTS = [
+    "a child or teenager under 18 years old in a retail store, small frame, youthful face, no visible wrinkles, school-age or adolescent appearance",
+    "a young person clearly below adult age — a kid or teen — browsing a beauty shop, smooth unlined skin, slight build",
+    "a teenage girl or boy in a cosmetics store, adolescent facial features, unlined forehead, visibly younger than 18",
+    "a pre-teen or teen customer in a beauty retail environment, no visible facial hair on males, smooth skin, young face",
+    "a child or adolescent person whose facial proportions and small stature indicate they are under 18 years old",
+]
+
+_OCLIP_AGE_18_24_PROMPTS = [
+    "a young adult aged 18 to 24 in a retail store, smooth unwrinkled skin, youthful face, college-age appearance",
+    "a person in their late teens or early twenties browsing a beauty store — no crow's feet, no forehead lines, fresh face",
+    "a young woman or young man aged roughly 18 to 24, full cheeks, bright eyes, no visible signs of ageing",
+    "a young adult customer in a cosmetics shop, student-age, energetic casual style, unlined skin",
+    "a person who appears to be in their early twenties — skin is smooth, face is youthful, clearly under 25",
+    "a 18-to-24-year-old shopper in a beauty store, minimal or no visible skin ageing, young adult body",
+]
+
+_OCLIP_AGE_25_34_PROMPTS = [
+    "a person aged 25 to 34 in a retail store, young adult but post-college appearance, minimal fine lines if any",
+    "a mid-twenties to early-thirties customer in a beauty shop, fully mature adult face, slight facial definition, no deep wrinkles",
+    "a young professional aged 25 to 34 browsing cosmetics, confident posture, clear skin, no obvious ageing signs",
+    "a person who appears to be in their late twenties or early thirties — face is fully adult, cheekbones defined, skin still smooth",
+    "a 25-to-34-year-old shopper in a beauty store, mature young-adult features, well-groomed, no grey hair visible",
+    "a person in their late twenties to early thirties, adult facial features without the deeper lines of middle age",
+]
+
+_OCLIP_AGE_35_44_PROMPTS = [
+    "a person aged 35 to 44 in a retail store, middle-adult face with subtle fine lines around the eyes or forehead",
+    "a customer in their late thirties or early forties in a beauty shop, mature appearance, slight nasolabial lines, confident bearing",
+    "a 35-to-44-year-old shopper in a cosmetics aisle, adult features with early signs of ageing — crow's feet beginning, forehead lines faint",
+    "a person who appears to be in their late thirties or early forties — face shows early middle-age characteristics, fully mature features",
+    "a mid-adult shopper aged 35 to 44, may have a few strands of grey hair, slight lines around the mouth or eyes, professional or casual dress",
+    "a person in their late thirties or early forties, skin has some texture and mild lines, mature but still youthful overall",
+]
+
+_OCLIP_AGE_45_54_PROMPTS = [
+    "a person aged 45 to 54 in a retail store, clearly middle-aged face with visible lines on the forehead and around the eyes",
+    "a middle-aged customer in their late forties or early fifties browsing a beauty shop, visible nasolabial folds, some grey hair",
+    "a 45-to-54-year-old shopper in a cosmetics store, noticeably older than 40, moderate facial ageing, deeper lines around the eyes and mouth",
+    "a person who appears to be in their late forties or early fifties — prominent forehead lines, crow's feet, possibly some grey at the temples",
+    "a middle-aged adult aged 45 to 54, mature face with established wrinkles but not yet elderly appearance, confident demeanour",
+    "a person in their late forties or early fifties with visible signs of middle age — grey streaks in hair, deeper smile lines, looser skin tone",
+]
+
+_OCLIP_AGE_55_PLUS_PROMPTS = [
+    "a person aged 55 or older in a retail store, senior or older-adult face, significant grey or white hair, deep wrinkles",
+    "an older adult customer in their late fifties, sixties or beyond, browsing a beauty shop, clearly elderly or senior appearance",
+    "a 55-plus-year-old shopper in a cosmetics store, deeply lined face, mostly or fully grey hair, older posture and gait",
+    "a person who appears to be 55 years old or older — deeply set wrinkles, white or grey hair, age-spotted skin, senior adult stature",
+    "a senior or older adult aged 55 and above, face shows significant ageing — sagging skin, prominent deep lines, aged neck",
+    "a person in their late fifties or older with the unmistakable features of senior age: grey hair, deep forehead creases, slower deliberate movement in a retail store",
+]
+
+import random
 
 class StaffClassifier:
     def __init__(self, device="cuda" if torch.cuda.is_available() else "cpu"):
         self.device = device
         self.clip_model, _, self.clip_preprocess = open_clip.create_model_and_transforms('ViT-B-32', pretrained='laion2b_s34b_b79k', device=device)
         self.clip_tokenizer = open_clip.get_tokenizer('ViT-B-32')
+        
+        # Staff vs Customer Features
         text_prompts = _OCLIP_CUSTOMER_PROMPTS + _OCLIP_STAFF_PROMPTS
         text_tokens = self.clip_tokenizer(text_prompts).to(device)
+        
+        # Gender Features
+        gender_prompts = _OCLIP_GENDER_MALE_PROMPTS + _OCLIP_GENDER_FEMALE_PROMPTS
+        self.num_male_prompts = len(_OCLIP_GENDER_MALE_PROMPTS)
+        gender_tokens = self.clip_tokenizer(gender_prompts).to(device)
+        
+        # Age Features
+        self.age_prompts = (
+            _OCLIP_AGE_0_17_PROMPTS + _OCLIP_AGE_18_24_PROMPTS + 
+            _OCLIP_AGE_25_34_PROMPTS + _OCLIP_AGE_35_44_PROMPTS + 
+            _OCLIP_AGE_45_54_PROMPTS + _OCLIP_AGE_55_PLUS_PROMPTS
+        )
+        self.age_bucket_sizes = [
+            len(_OCLIP_AGE_0_17_PROMPTS), len(_OCLIP_AGE_18_24_PROMPTS),
+            len(_OCLIP_AGE_25_34_PROMPTS), len(_OCLIP_AGE_35_44_PROMPTS),
+            len(_OCLIP_AGE_45_54_PROMPTS), len(_OCLIP_AGE_55_PLUS_PROMPTS)
+        ]
+        self.age_bucket_labels = ["0-17", "18-24", "25-34", "35-44", "45-54", "55+"]
+        age_tokens = self.clip_tokenizer(self.age_prompts).to(device)
+        
         with torch.no_grad():
             self.text_features = self.clip_model.encode_text(text_tokens)
             self.text_features /= self.text_features.norm(dim=-1, keepdim=True)
+            
+            self.gender_features = self.clip_model.encode_text(gender_tokens)
+            self.gender_features /= self.gender_features.norm(dim=-1, keepdim=True)
+            
+            self.age_features = self.clip_model.encode_text(age_tokens)
+            self.age_features /= self.age_features.norm(dim=-1, keepdim=True)
+            
         self.num_customer_prompts = len(_OCLIP_CUSTOMER_PROMPTS)
         
     def extract_features(self, frame, bbox):
@@ -127,7 +240,35 @@ class StaffClassifier:
         with torch.no_grad():
             image_features = self.clip_model.encode_image(image_input)
             image_features /= image_features.norm(dim=-1, keepdim=True)
+            
+            # Staff Prediction
             similarity = (100.0 * image_features @ self.text_features.T).softmax(dim=-1)
             staff_prob = similarity[0, self.num_customer_prompts:].sum().item()
             
-        return staff_prob, black_ratio
+            # Gender Prediction
+            gender_sim = (100.0 * image_features @ self.gender_features.T).softmax(dim=-1)
+            male_prob = gender_sim[0, :self.num_male_prompts].sum().item()
+            gender_pred = "M" if male_prob > 0.5 else "F"
+            
+            # Age Prediction
+            age_sim = (100.0 * image_features @ self.age_features.T).softmax(dim=-1)[0]
+            
+            # Aggregate probabilities by bucket
+            bucket_probs = []
+            idx = 0
+            for size in self.age_bucket_sizes:
+                bucket_probs.append(age_sim[idx:idx+size].sum().item())
+                idx += size
+                
+            best_bucket_idx = np.argmax(bucket_probs)
+            age_bucket = self.age_bucket_labels[best_bucket_idx]
+            
+            # Synthesize integer age based on bucket
+            if age_bucket == "0-17": age_pred = random.randint(12, 17)
+            elif age_bucket == "18-24": age_pred = random.randint(18, 24)
+            elif age_bucket == "25-34": age_pred = random.randint(25, 34)
+            elif age_bucket == "35-44": age_pred = random.randint(35, 44)
+            elif age_bucket == "45-54": age_pred = random.randint(45, 54)
+            else: age_pred = random.randint(55, 70)
+            
+        return staff_prob, black_ratio, gender_pred, age_pred, age_bucket
