@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Intelligence - Live Dashboard</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --panel-bg: rgba(30, 41, 59, 0.7);
+            --accent: #38bdf8;
+            --accent-hover: #0284c7;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --success: #22c55e;
+            --danger: #ef4444;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            background-image: radial-gradient(circle at 50% 0%, #1e293b 0%, #0f172a 100%);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 2rem;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .brand {
+            font-size: 1.5rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #38bdf8, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        button:hover {
+            background-color: var(--accent-hover);
+            transform: translateY(-1px);
+        }
+        
+        button:disabled {
+            background-color: var(--text-muted);
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            background: rgba(148, 163, 184, 0.1);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .status-badge.active {
+            background: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border-color: rgba(34, 197, 94, 0.2);
+        }
+
+        .status-badge .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .status-badge.active .indicator {
+            box-shadow: 0 0 8px currentColor;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            padding: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .panel {
+            background: var(--panel-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .panel-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text-main);
+            margin: 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .metric-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-2px);
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .metric-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-main);
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+        }
+
+        .zone-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .zone-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0.75rem 1rem;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .zone-name {
+            font-weight: 500;
+            color: var(--text-main);
+        }
+
+        .zone-time {
+            color: var(--accent);
+            font-variant-numeric: tabular-nums;
+        }
+
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <nav class="navbar">
+        <div class="brand">Store Intelligence</div>
+        <div class="controls">
+            <div id="statusBadge" class="status-badge">
+                <div class="indicator"></div>
+                <span id="statusText">System Idle</span>
+            </div>
+            <button id="btnStore1" onclick="startPipeline('STORE_001')">Process Store 1</button>
+            <button id="btnStore2" onclick="startPipeline('STORE_002')">Process Store 2</button>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Metrics Panel -->
+        <div class="panel">
+            <div class="panel-header">
+                <h2 class="panel-title">Real-Time Analytics</h2>
+            </div>
+            
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-label">Unique Visitors (Today)</div>
+                    <div class="metric-value" id="valUnique">0</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Queue Depth (Current)</div>
+                    <div class="metric-value" id="valQueue">0</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Conversion Rate</div>
+                    <div class="metric-value" id="valConv">0.0<span style="font-size: 1rem; color: var(--text-muted);">%</span></div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-label">Queue Abandonment Rate</div>
+                    <div class="metric-value" id="valAbandon">0.0<span style="font-size: 1rem; color: var(--text-muted);">%</span></div>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 2rem; margin-bottom: 0; font-size: 0.875rem; color: var(--text-muted); font-weight: 500;">Average Dwell Time by Zone</h3>
+            <ul class="zone-list" id="zoneList">
+                <li class="zone-item" style="justify-content: center; color: var(--text-muted);">Waiting for data...</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        let currentStoreId = null;
+        let feedInterval = null;
+        let metricsInterval = null;
+
+        async function startPipeline(storeId) {
+            // Update UI State
+            document.getElementById('btnStore1').disabled = true;
+            document.getElementById('btnStore2').disabled = true;
+            document.getElementById('statusBadge').classList.add('active');
+            document.getElementById('statusText').innerText = `Processing ${storeId}...`;
+            // feedTitle removed
+            currentStoreId = storeId;
+            
+            // Start Backend Process
+            try {
+                const response = await fetch(`/api/start-pipeline/${storeId}`, { method: 'POST' });
+                if (!response.ok) throw new Error("Failed to start pipeline");
+                
+                // Clear old intervals just in case
+                if (feedInterval) clearInterval(feedInterval);
+                if (metricsInterval) clearInterval(metricsInterval);
+                
+                // Start polling intervals
+                startPolling();
+                
+            } catch (err) {
+                alert("Error starting pipeline: " + err.message);
+                resetUI();
+            }
+        }
+
+        function startPolling() {
+            // Poll metrics every 1 second
+            metricsInterval = setInterval(fetchMetrics, 1000);
+            fetchMetrics(); // Initial fetch
+        }
+
+        async function fetchMetrics() {
+            if (!currentStoreId) return;
+            try {
+                const res = await fetch(`/stores/${currentStoreId}/metrics`);
+                if (res.ok) {
+                    const data = await res.json();
+                    updateMetricsUI(data);
+                }
+            } catch (err) {
+                console.error("Error fetching metrics:", err);
+            }
+        }
+
+        function updateMetricsUI(data) {
+            document.getElementById('valUnique').innerText = data.unique_visitors || 0;
+            document.getElementById('valQueue').innerText = data.queue_depth_current || 0;
+            
+            const conv = (data.conversion_rate * 100).toFixed(1);
+            document.getElementById('valConv').innerHTML = `${conv}<span style="font-size: 1rem; color: var(--text-muted);">%</span>`;
+            
+            const abandon = (data.abandonment_rate * 100).toFixed(1);
+            document.getElementById('valAbandon').innerHTML = `${abandon}<span style="font-size: 1rem; color: var(--text-muted);">%</span>`;
+
+            // Update Zones
+            const zoneList = document.getElementById('zoneList');
+            zoneList.innerHTML = '';
+            
+            if (data.avg_dwell_by_zone && Object.keys(data.avg_dwell_by_zone).length > 0) {
+                // Sort by highest dwell
+                const sortedZones = Object.entries(data.avg_dwell_by_zone).sort((a, b) => b[1] - a[1]);
+                
+                sortedZones.forEach(([zone, ms]) => {
+                    const secs = (ms / 1000).toFixed(1);
+                    zoneList.innerHTML += `
+                        <li class="zone-item fade-in">
+                            <span class="zone-name">${zone}</span>
+                            <span class="zone-time">${secs}s</span>
+                        </li>
+                    `;
+                });
+            } else {
+                zoneList.innerHTML = `<li class="zone-item" style="justify-content: center; color: var(--text-muted);">No zone data yet</li>`;
+            }
+        }
+
+        function resetUI() {
+            document.getElementById('btnStore1').disabled = false;
+            document.getElementById('btnStore2').disabled = false;
+            document.getElementById('statusBadge').classList.remove('active');
+            document.getElementById('statusText').innerText = `System Idle`;
+            if (feedInterval) clearInterval(feedInterval);
+            if (metricsInterval) clearInterval(metricsInterval);
+        }
+    </script>
+</body>
+</html>

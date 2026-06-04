@@ -6,7 +6,7 @@ from sqlalchemy.orm import declarative_base
 logger = structlog.get_logger()
 
 # Default to localhost if not provided
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://postgres:postgres@localhost:5432/postgres")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+asyncpg://apex:apex123@localhost:5432/storedb")
 
 # Async SQLAlchemy requires the asyncpg driver, so swap standard postgresql:// if needed
 if DATABASE_URL.startswith("postgresql://"):

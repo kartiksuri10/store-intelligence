@@ -3,7 +3,10 @@ import uuid
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
+from fastapi.staticfiles import StaticFiles
+import subprocess
+import os
 from fastapi.middleware.cors import CORSMiddleware
 import structlog
 
@@ -61,6 +64,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Mount static directory for video feed
+data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+os.makedirs(data_dir, exist_ok=True)
+app.mount("/static", StaticFiles(directory=data_dir), name="static")
+
 @app.middleware("http")
 async def structlog_middleware(request: Request, call_next):
     start_time = time.time()
@@ -106,7 +114,7 @@ async def structlog_middleware(request: Request, call_next):
         )
         # Log without raw stack traces
         logger.error("request_failed", exc_info=False)
-        raise e
+        return JSONResponse(status_code=503, content={"error": "service_unavailable", "detail": str(e)})
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request: Request, exc: Exception):
@@ -127,4 +135,40 @@ if events and metrics and funnel and heatmap and anomalies and health:
 @app.get("/")
 async def root():
     return {"status": "ok", "service": "store-intelligence-api"}
+
+pipeline_process = None
+
+@app.get("/ui", response_class=HTMLResponse)
+async def serve_ui():
+    ui_path = os.path.join(os.path.dirname(__file__), "ui.html")
+    with open(ui_path, "r") as f:
+        return f.read()
+
+@app.post("/api/start-pipeline/{store_id}")
+async def start_pipeline(store_id: str):
+    global pipeline_process
+    if pipeline_process is not None:
+        try:
+            pipeline_process.terminate()
+            pipeline_process.wait(timeout=2)
+        except Exception:
+            pass
+            
+    pipeline_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "pipeline"))
+    data_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data"))
+    
+    from datetime import datetime, timezone
+    
+    current_time_iso = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    
+    cmd = [
+        "python", "detect.py",
+        "--store1-dir", os.path.join(data_dir, "Store_1"),
+        "--store2-dir", os.path.join(data_dir, "Store_2"),
+        "--output", os.path.join(data_dir, "events.jsonl"),
+        "--target-store", store_id,
+        "--clip-start", current_time_iso
+    ]
+    pipeline_process = subprocess.Popen(cmd, cwd=pipeline_dir)
+    return {"status": "started", "store_id": store_id}
 
