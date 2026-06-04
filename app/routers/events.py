@@ -36,6 +36,9 @@ async def ingest_events(payload: IngestRequest, db: AsyncSession = Depends(get_d
     errors = []
 
     try:
+        # Add event_count to structured logging
+        structlog.contextvars.bind_contextvars(event_count=len(payload.events))
+
         # Check for existing event_ids in bulk to optimize database queries
         incoming_ids = [evt.event_id for evt in payload.events]
         result = await db.execute(select(Event.event_id).where(Event.event_id.in_(incoming_ids)))

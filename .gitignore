@@ -160,13 +160,19 @@ cython_debug/
 .vscode/
 
 # Data directories (do not push heavy data files to GitHub)
-data/
+data/*
+!data/store_layout.json
 
 # Model weights
 *.pt
 *.pth
 *.weights
 *.onnx
+
+# Output artifacts
+*.mp4
+*.avi
+test_events.jsonl
 
 # OS specific files
 .DS_Store

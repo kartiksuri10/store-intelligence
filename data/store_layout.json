@@ -1,0 +1,596 @@
+{
+  "stores": [
+    {
+      "store_id": "STORE_001",
+      "store_name": "Store 1",
+      "open_hours": {
+        "open": "10:00",
+        "close": "22:00"
+      },
+      "cameras": [
+        {
+          "camera_id": "CAM_ZONE_01",
+          "type": "zone",
+          "description": "Main floor zone coverage - top wall shelves (Salm, TFS, Minimalis, Aqualogi, Foxtal, JC)"
+        },
+        {
+          "camera_id": "CAM_ZONE_02",
+          "type": "zone",
+          "description": "Secondary zone coverage - bottom wall (Faces, Mars+Nybae, Mens, Loreal, Beaut) and FOH center"
+        },
+        {
+          "camera_id": "CAM_ENTRY_01",
+          "type": "entry",
+          "description": "Entry/exit threshold - left side glass entry",
+          "tripwire": {
+            "pt1": [
+              1302,
+              321
+            ],
+            "pt2": [
+              830,
+              875
+            ]
+          }
+        },
+        {
+          "camera_id": "CAM_BILLING_01",
+          "type": "billing",
+          "description": "Billing/cash counter area - right side cash counter"
+        }
+      ],
+      "zones": [
+        {
+          "zone_id": "ZONE_S1_SALM",
+          "zone_name": "Salm Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "SALM",
+          "bbox_approximate": {
+            "x1": 150,
+            "y1": 60,
+            "x2": 320,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_TFS",
+          "zone_name": "TFS Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "TFS",
+          "bbox_approximate": {
+            "x1": 320,
+            "y1": 60,
+            "x2": 480,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_MINIMALIS",
+          "zone_name": "Minimalis Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "MINIMALIS",
+          "bbox_approximate": {
+            "x1": 620,
+            "y1": 60,
+            "x2": 820,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_AQUALOGI",
+          "zone_name": "Aqualogi Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "AQUALOGI",
+          "bbox_approximate": {
+            "x1": 820,
+            "y1": 60,
+            "x2": 1020,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_FOXTAL",
+          "zone_name": "Foxtale Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "FOXTALE",
+          "bbox_approximate": {
+            "x1": 1020,
+            "y1": 60,
+            "x2": 1200,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_JC",
+          "zone_name": "JC Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "JC",
+          "bbox_approximate": {
+            "x1": 1200,
+            "y1": 60,
+            "x2": 1380,
+            "y2": 150
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_FRAGRANCE",
+          "zone_name": "Fragrance & Nail Counter",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_ZONE_01",
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "FRAGRANCE",
+          "bbox_approximate": {
+            "x1": 420,
+            "y1": 300,
+            "x2": 600,
+            "y2": 520
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_MAKEUP_UNIT",
+          "zone_name": "Makeup Unit Display",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_ZONE_01",
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "MAKEUP",
+          "bbox_approximate": {
+            "x1": 700,
+            "y1": 280,
+            "x2": 950,
+            "y2": 560
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_FACES",
+          "zone_name": "Faces Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "FACES",
+          "bbox_approximate": {
+            "x1": 200,
+            "y1": 660,
+            "x2": 580,
+            "y2": 760
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_MARS_NYBAE",
+          "zone_name": "Mars & NY Bae Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "MARS_NYBAE",
+          "bbox_approximate": {
+            "x1": 580,
+            "y1": 660,
+            "x2": 820,
+            "y2": 760
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_MENS",
+          "zone_name": "Mens Zone",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "MENS",
+          "bbox_approximate": {
+            "x1": 820,
+            "y1": 660,
+            "x2": 980,
+            "y2": 760
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_LOREAL",
+          "zone_name": "Loreal Shelf",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "LOREAL",
+          "bbox_approximate": {
+            "x1": 1020,
+            "y1": 660,
+            "x2": 1240,
+            "y2": 760
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_BEAUTY",
+          "zone_name": "Beauty Zone",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "BEAUTY",
+          "bbox_approximate": {
+            "x1": 1240,
+            "y1": 660,
+            "x2": 1420,
+            "y2": 760
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_FOH",
+          "zone_name": "Front of House",
+          "zone_type": "FLOOR",
+          "camera_coverage": [
+            "CAM_ZONE_01",
+            "CAM_ZONE_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "FOH",
+          "bbox_approximate": {
+            "x1": 420,
+            "y1": 150,
+            "x2": 1150,
+            "y2": 660
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_ENTRY",
+          "zone_name": "Entry / Exit",
+          "zone_type": "ENTRY",
+          "camera_coverage": [
+            "CAM_ENTRY_01"
+          ],
+          "is_billing": false,
+          "is_entry": true,
+          "sku_zone": null,
+          "bbox_approximate": {
+            "x1": 0,
+            "y1": 200,
+            "x2": 120,
+            "y2": 600
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_BILLING",
+          "zone_name": "Cash Counter",
+          "zone_type": "BILLING",
+          "camera_coverage": [
+            "CAM_BILLING_01"
+          ],
+          "is_billing": true,
+          "is_entry": false,
+          "sku_zone": null,
+          "bbox_approximate": {
+            "x1": 1280,
+            "y1": 250,
+            "x2": 1530,
+            "y2": 520
+          }
+        },
+        {
+          "zone_id": "ZONE_S1_ACCESSORIES",
+          "zone_name": "Accessories",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_BILLING_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "ACCESSORIES",
+          "bbox_approximate": {
+            "x1": 1380,
+            "y1": 520,
+            "x2": 1530,
+            "y2": 660
+          }
+        }
+      ]
+    },
+    {
+      "store_id": "STORE_002",
+      "store_name": "Store 2",
+      "open_hours": {
+        "open": "10:00",
+        "close": "22:00"
+      },
+      "cameras": [
+        {
+          "camera_id": "CAM_ZONE_01",
+          "type": "zone",
+          "description": "Main floor zone - wall units, gondolas, makeup units"
+        },
+        {
+          "camera_id": "CAM_ENTRY_01",
+          "type": "entry",
+          "description": "Primary entry threshold - center bottom entrance",
+          "tripwire": {
+            "pt1": [
+              698,
+              601
+            ],
+            "pt2": [
+              283,
+              653
+            ]
+          },
+          "buffer_zone": [
+            [
+              278,
+              622
+            ],
+            [
+              281,
+              702
+            ],
+            [
+              713,
+              656
+            ],
+            [
+              703,
+              567
+            ]
+          ]
+        },
+        {
+          "camera_id": "CAM_ENTRY_02",
+          "type": "entry",
+          "description": "Secondary entry coverage",
+          "tripwire": {
+            "pt1": [
+              697,
+              598
+            ],
+            "pt2": [
+              274,
+              650
+            ]
+          }
+        },
+        {
+          "camera_id": "CAM_BILLING_01",
+          "type": "billing",
+          "description": "Cash counter - center top area"
+        }
+      ],
+      "zones": [
+        {
+          "zone_id": "ZONE_S2_WALL_LEFT",
+          "zone_name": "Left Wall Units",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "WALL_LEFT",
+          "bbox_approximate": {
+            "x1": 60,
+            "y1": 350,
+            "x2": 200,
+            "y2": 950
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_WALL_TOP_LEFT",
+          "zone_name": "Top Wall Units Left (7-10)",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "WALL_TOP_LEFT",
+          "bbox_approximate": {
+            "x1": 125,
+            "y1": 390,
+            "x2": 460,
+            "y2": 470
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_WALL_TOP_RIGHT",
+          "zone_name": "Top Wall Units Right (11-13)",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "WALL_TOP_RIGHT",
+          "bbox_approximate": {
+            "x1": 560,
+            "y1": 390,
+            "x2": 830,
+            "y2": 470
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_WALL_RIGHT",
+          "zone_name": "Right Wall Units",
+          "zone_type": "SHELF",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "WALL_RIGHT",
+          "bbox_approximate": {
+            "x1": 820,
+            "y1": 350,
+            "x2": 960,
+            "y2": 950
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_GONDOLA_1",
+          "zone_name": "Gondola 1 - Center Floor",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "GONDOLA",
+          "bbox_approximate": {
+            "x1": 200,
+            "y1": 700,
+            "x2": 430,
+            "y2": 900
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_GONDOLA_2",
+          "zone_name": "Gondola 2 - Center Floor",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "GONDOLA",
+          "bbox_approximate": {
+            "x1": 230,
+            "y1": 490,
+            "x2": 430,
+            "y2": 680
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_MAKEUP_UNITS",
+          "zone_name": "Makeup Units",
+          "zone_type": "DISPLAY",
+          "camera_coverage": [
+            "CAM_ZONE_01"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "MAKEUP",
+          "bbox_approximate": {
+            "x1": 580,
+            "y1": 580,
+            "x2": 800,
+            "y2": 860
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_FOH",
+          "zone_name": "Front of House",
+          "zone_type": "FLOOR",
+          "camera_coverage": [
+            "CAM_ZONE_01",
+            "CAM_ENTRY_01",
+            "CAM_ENTRY_02"
+          ],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": "FOH",
+          "bbox_approximate": {
+            "x1": 200,
+            "y1": 470,
+            "x2": 820,
+            "y2": 950
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_ENTRY",
+          "zone_name": "Entry / Exit",
+          "zone_type": "ENTRY",
+          "camera_coverage": [
+            "CAM_ENTRY_01",
+            "CAM_ENTRY_02"
+          ],
+          "is_billing": false,
+          "is_entry": true,
+          "sku_zone": null,
+          "bbox_approximate": {
+            "x1": 330,
+            "y1": 950,
+            "x2": 670,
+            "y2": 1100
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_BILLING",
+          "zone_name": "Cash Counter",
+          "zone_type": "BILLING",
+          "camera_coverage": [
+            "CAM_BILLING_01"
+          ],
+          "is_billing": true,
+          "is_entry": false,
+          "sku_zone": null,
+          "bbox_approximate": {
+            "x1": 420,
+            "y1": 390,
+            "x2": 620,
+            "y2": 530
+          }
+        },
+        {
+          "zone_id": "ZONE_S2_BOH",
+          "zone_name": "Back of House",
+          "zone_type": "STAFF_ONLY",
+          "camera_coverage": [],
+          "is_billing": false,
+          "is_entry": false,
+          "sku_zone": null,
+          "bbox_approximate": {
+            "x1": 125,
+            "y1": 0,
+            "x2": 960,
+            "y2": 390
+          }
+        }
+      ]
+    }
+  ]
+}

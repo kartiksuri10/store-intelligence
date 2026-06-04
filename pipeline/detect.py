@@ -10,13 +10,15 @@ from ultralytics import YOLO
 from tracker import TrackStateManager
 from emit import EventEmitter, StoreEvent, EventType, make_timestamp
 from store_layout_loader import get_zone_for_position, get_camera_type, get_billing_zones, get_tripwire
+from staff_classifier import StaffClassifier
+from reid_tracker import GlobalReIDTracker
 
-MODEL_PATH = "yolov8n.pt"  # nano model, downloads automatically on first run
-PERSON_CLASS_ID = 0         # COCO class 0 = person
+MODEL_PATH = "yolov8n.pt"
+PERSON_CLASS_ID = 0
 FPS = 15.0
 FRAME_SKIP = 3
-DWELL_THRESHOLD_FRAMES = 450  # 30 seconds at 15fps -> emit ZONE_DWELL
-DWELL_EMIT_INTERVAL_FRAMES = 450  # emit every 30s of continued dwell
+DWELL_THRESHOLD_FRAMES = 450
+DWELL_EMIT_INTERVAL_FRAMES = 450
 
 def process_clip(
     video_path: str,
@@ -26,7 +28,9 @@ def process_clip(
     clip_start_dt: datetime.datetime,
     emitter: EventEmitter,
     billing_zone_ids: list[str],
-    model
+    model,
+    staff_classifier,
+    reid_tracker
 ) -> dict:
     print(f"Processing clip: {video_path} | Store: {store_id} | Camera: {camera_id} ({camera_type})")
     cap = cv2.VideoCapture(video_path)
@@ -55,8 +59,8 @@ def process_clip(
 
     frame_num = 0
     event_counts = defaultdict(int)
-    billing_join_times = {}
     effective_fps = FPS / FRAME_SKIP
+    last_event_frame = 0
 
     while True:
         ret, frame = cap.read()
@@ -65,12 +69,11 @@ def process_clip(
             
         frame_num += 1
         
-        # Frame skip for performance
         if frame_num % FRAME_SKIP != 0:
             continue
             
-        # 1. Run YOLO ByteTrack
-        results = model.track(frame, persist=True, tracker="bytetrack.yaml", verbose=False)
+        # Group Entry edge case: iou=0.45 to prevent merging, conf=0.3
+        results = model.track(frame, persist=True, tracker="bytetrack.yaml", verbose=False, iou=0.45, conf=0.3)
         
         current_detections = {}
         for r in results:
@@ -86,24 +89,52 @@ def process_clip(
                             "confidence": conf
                         }
                     
-        # 2. Update TrackStateManager
         active_states, new_states, exited_states = tracker_manager.update(current_detections, frame_num)
         
         timestamp = make_timestamp(clip_start_dt, frame_num, FPS)
 
+        # Pre-calculate queue depth for Billing Queue Buildup
         current_queue_depth = 0
         if camera_type == "billing":
-            current_queue_depth = len(active_states)
+            for state in active_states:
+                tid_int = int(state.track_id.split('_')[1])
+                det = current_detections[tid_int]
+                bbox = det["bbox"]
+                ccx = (bbox[0] + bbox[2]) / 2.0
+                ccy = (bbox[1] + bbox[3]) / 2.0
+                zone = get_zone_for_position(store_id, camera_id, ccx, ccy, frame_w, frame_h)
+                if zone in billing_zone_ids:
+                    current_queue_depth += 1
             
-        # 3. Process active tracks
         for state in active_states:
             tid_int = int(state.track_id.split('_')[1])
             det = current_detections[tid_int]
             bbox = det["bbox"]
             conf = det["confidence"]
             
+            # 1. Staff Movement classification logic
+            if state.total_votes < 10:
+                staff_prob, black_ratio = staff_classifier.extract_features(frame, bbox)
+                if (staff_prob > 0.40) and (black_ratio > 0.10):
+                    state.staff_votes += 1
+                state.total_votes += 1
+                if state.total_votes == 10 and state.staff_votes >= 4:
+                    state.is_staff = True
+            
+            # 2. Re-ID and Camera Overlap deduplication
+            if state.global_vid is None:
+                vid, is_reentry = reid_tracker.get_visitor_id(store_id, camera_id, state.track_id, frame, bbox, timestamp)
+                state.global_vid = vid
+                if is_reentry:
+                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.REENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
+                    emitter.emit(evt)
+                    event_counts[evt.event_type] += 1
+                    last_event_frame = frame_num
+            
             cx = (bbox[0] + bbox[2]) / 2.0
-            cy = bbox[3] # Using feet (bottom Y) for buffer mapping
+            cy = bbox[3]
+            ccx = (bbox[0] + bbox[2]) / 2.0
+            ccy = (bbox[1] + bbox[3]) / 2.0
             
             # --- ENTRY CAMERA TRIPWIRE LOGIC ---
             if camera_type == "entry" and ref_pt1 is not None and ref_pt2 is not None:
@@ -112,40 +143,40 @@ def process_clip(
                 if state.previous_side is None:
                     state.previous_side = current_side
                 elif state.previous_side != current_side:
-                    # They crossed the line! 
-                    # Convention: 1 -> -1 is ENTRY, -1 -> 1 is EXIT
                     direction = "ENTRY" if state.previous_side == 1 else "EXIT"
                     
                     if direction == "ENTRY" and not state.has_emitted_entry:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.ENTRY.value, timestamp=timestamp, confidence=conf)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ENTRY.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         state.has_emitted_entry = True
+                        last_event_frame = frame_num
                     elif direction == "EXIT" and not state.has_emitted_exit:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.EXIT.value, timestamp=timestamp, confidence=conf)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.EXIT.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
                         state.has_emitted_exit = True
+                        last_event_frame = frame_num
                             
                     state.previous_side = current_side
             
             # --- ZONE CAMERA LOGIC ---
             if camera_type == "zone":
-                ccx = (bbox[0] + bbox[2]) / 2.0
-                ccy = (bbox[1] + bbox[3]) / 2.0
                 current_zone = get_zone_for_position(store_id, camera_id, ccx, ccy, frame_w, frame_h)
                 
                 if current_zone != state.zone_id:
                     if state.zone_id is not None:
                         dwell_ms = int(((frame_num - state.zone_enter_frame) / effective_fps) * 1000) if state.zone_enter_frame else 0
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.ZONE_EXIT.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_EXIT.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
+                        last_event_frame = frame_num
                         
                     if current_zone is not None:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.ZONE_ENTER.value, timestamp=timestamp, zone_id=current_zone, confidence=conf)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_ENTER.value, timestamp=timestamp, zone_id=current_zone, confidence=conf, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
+                        last_event_frame = frame_num
                         
                     state.zone_id = current_zone
                     state.zone_enter_frame = frame_num
@@ -154,30 +185,43 @@ def process_clip(
                     frames_in_zone = frame_num - state.zone_enter_frame
                     if frames_in_zone > 0 and frames_in_zone % DWELL_EMIT_INTERVAL_FRAMES == 0:
                         dwell_ms = int((frames_in_zone / effective_fps) * 1000)
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.ZONE_DWELL.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.ZONE_DWELL.value, timestamp=timestamp, zone_id=state.zone_id, dwell_ms=dwell_ms, confidence=conf, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
+                        last_event_frame = frame_num
 
             # --- BILLING LOGIC ---
             if camera_type == "billing":
-                if state in new_states:
-                    billing_join_times[state.track_id] = frame_num
-                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.BILLING_QUEUE_JOIN.value, timestamp=timestamp, confidence=conf, metadata={"queue_depth": current_queue_depth})
+                zone = get_zone_for_position(store_id, camera_id, ccx, ccy, frame_w, frame_h)
+                in_queue = (zone in billing_zone_ids)
+                
+                if in_queue and state.billing_join_frame is None:
+                    state.billing_join_frame = frame_num
+                    evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_JOIN.value, timestamp=timestamp, confidence=conf, is_staff=state.is_staff, metadata={"queue_depth": current_queue_depth})
                     emitter.emit(evt)
                     event_counts[evt.event_type] += 1
+                    last_event_frame = frame_num
+                elif not in_queue and state.billing_join_frame is not None:
+                    dwell_frames = frame_num - state.billing_join_frame
+                    dwell_seconds = dwell_frames / FPS
+                    if dwell_seconds < 120:
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff)
+                        emitter.emit(evt)
+                        event_counts[evt.event_type] += 1
+                        last_event_frame = frame_num
+                    state.billing_join_frame = None
 
         # 4. Handle EXITED states (abandonment logic)
         for state in exited_states:
             if camera_type == "billing":
-                joined_frame = billing_join_times.get(state.track_id)
-                if joined_frame is not None:
-                    dwell_frames = frame_num - joined_frame
+                if state.billing_join_frame is not None:
+                    dwell_frames = frame_num - state.billing_join_frame
                     dwell_seconds = dwell_frames / FPS
                     if dwell_seconds < 120:
-                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.track_id, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp)
+                        evt = StoreEvent(store_id=store_id, camera_id=camera_id, visitor_id=state.global_vid, event_type=EventType.BILLING_QUEUE_ABANDON.value, timestamp=timestamp, is_staff=state.is_staff)
                         emitter.emit(evt)
                         event_counts[evt.event_type] += 1
-                    billing_join_times.pop(state.track_id, None)
+                    state.billing_join_frame = None
 
         if frame_num % 100 == 0:
             print(f"Processed {frame_num} frames. Events emitted so far: {sum(event_counts.values())}")
@@ -225,6 +269,8 @@ def main():
     )
 
     model = YOLO(MODEL_PATH)
+    staff_classifier = StaffClassifier()
+    reid_tracker = GlobalReIDTracker()
 
     for video_file, store_id, camera_id, camera_type in all_tasks:
         if not video_file.exists():
@@ -240,7 +286,9 @@ def main():
             clip_start_dt=clip_start_dt,
             emitter=emitter,
             billing_zone_ids=billing_zones,
-            model=model
+            model=model,
+            staff_classifier=staff_classifier,
+            reid_tracker=reid_tracker
         )
         for e_type, count in event_counts.items():
             total_events_per_store[store_id] += count

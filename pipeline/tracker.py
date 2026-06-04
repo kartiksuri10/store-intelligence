@@ -6,9 +6,12 @@ class TrackState:
     """Maintains business logic state for a track managed by ByteTrack."""
     def __init__(self, track_id: str):
         self.track_id = track_id
+        self.global_vid = None
         self.zone_id = None
         self.zone_enter_frame = None
         self.is_staff = False
+        self.staff_votes = 0
+        self.total_votes = 0
         self.session_seq = 0
         self.billing_join_frame = None
         self.tripwire_side = None
@@ -29,7 +32,7 @@ class TrackStateManager:
     this class simply wraps the returned track IDs to manage our store business logic 
     (dwell time, zones, staff status, missing buffer).
     """
-    def __init__(self, max_missing_frames=45):
+    def __init__(self, max_missing_frames=90):
         self.tracks = {}
         self.max_missing_frames = max_missing_frames
 
